@@ -3,36 +3,49 @@ const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 
-var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  let id;
   counter.getNextUniqueId((err, data) => {
     if (err) {
-      console.log(err);
+      console.log('an error: ', err);
     } else {
-      items[data] = text;
-      callback(null, { data, text });
+      // items[data] = text;
+      let fileName = exports.dataDir;
+      fs.writeFile(fileName + '/' + data + '.txt', text, (e, d) => {
+        if ( e ) {
+          console.log(e);
+        }
+
+        callback(null, { id: data, text });
+      });
     }
   });
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  fs.readdir(exports.dataDir, (err, data)=>{
+    if (err) {
+      console.log(err);
+    }
+
+    callback(null, data.map(item=>({id: item.split('.')[0], text: item.split('.')[0]})));
   });
-  callback(null, data);
+
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, text)=>{
+    if (!text) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      callback(null, { id, text: text.toString() });
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
