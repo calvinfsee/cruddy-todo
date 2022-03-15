@@ -1,8 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
 const _ = require('underscore');
 const counter = require('./counter');
-
+const readFile = util.promisify(fs.readFile);
+const readDir = util.promisify(fs.readdir);
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
@@ -23,14 +25,18 @@ exports.create = (text, callback) => {
   });
 };
 
+
 exports.readAll = (callback) => {
-  fs.readdir(exports.dataDir, (err, data)=>{ //Grabs list of files in directory
+  fs.readdir(exports.dataDir, (err, files)=>{
     if (err) {
-      console.log(err);
+      callback(err);
     }
-    // write id for id and text
-    callback(null, data.map(item=>({id: item.split('.')[0], text: item.split('.')[0]})));
-    // TODO rewrite with promises to handle text within each file instead of ID
+    let res = files.map(file => {
+      return readFile(path.join(exports.dataDir, file)).then(text => {
+        return {id: file.split('.')[0], text: text.toString()};
+      }).catch(err => console.log(err));
+    });
+    Promise.all(res).then(results => callback(null, results)).catch(error => console.log(error));
   });
 };
 
