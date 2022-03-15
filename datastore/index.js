@@ -44,13 +44,20 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err)=>{
-    if (err) {
-      callback(new Error(`No item with id: ${err}`));
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (error)=>{
+    if (error) {
+      callback(new Error(`No item with id: ${error}`));
     } else {
-      callback(null, { id, text});
+      fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err)=>{
+        if (err) {
+          callback(new Error(`No item with id: ${err}`));
+        } else {
+          callback(null, { id, text });
+        }
+      });
     }
   });
+
 };
 
 exports.delete = (id, callback) => {
