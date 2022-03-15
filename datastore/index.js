@@ -11,7 +11,6 @@ exports.create = (text, callback) => {
     if (err) {
       console.log('an error: ', err);
     } else {
-      // items[data] = text;
       let fileName = exports.dataDir;
       fs.writeFile(fileName + '/' + data + '.txt', text, (e, d) => {
         if ( e ) {
@@ -32,10 +31,6 @@ exports.readAll = (callback) => {
 
     callback(null, data.map(item=>({id: item.split('.')[0], text: item.split('.')[0]})));
   });
-
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
 };
 
 exports.readOne = (id, callback) => {
@@ -49,24 +44,24 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  fs.writeFile(exports.dataDir + '/' + id + '.txt', text, (err)=>{
+    if (err) {
+      callback(new Error(`No item with id: ${err}`));
+    } else {
+      callback(null, { id, text});
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+  fs.rm(exports.dataDir + `/${id}.txt`, (err) => {
+    if (err) {
+      // report an error if item not found
+      callback(new Error(`No item with id:${id} ${err}`));
+    } else {
+      callback();
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
