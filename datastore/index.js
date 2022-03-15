@@ -7,16 +7,16 @@ const counter = require('./counter');
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  counter.getNextUniqueId((err, data) => {
+  counter.getNextUniqueId((err, data) => { //Grabs new ID
     if (err) {
       console.log('an error: ', err);
     } else {
       let fileName = exports.dataDir;
-      fs.writeFile(fileName + '/' + data + '.txt', text, (e, d) => {
+      fs.writeFile(fileName + '/' + data + '.txt', text, (e, d) => { //Creates new file with new ID as filename, writes text in file
         if ( e ) {
           console.log(e);
         }
-
+        // formulate data for server response
         callback(null, { id: data, text });
       });
     }
@@ -24,26 +24,28 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  fs.readdir(exports.dataDir, (err, data)=>{
+  fs.readdir(exports.dataDir, (err, data)=>{ //Grabs list of files in directory
     if (err) {
       console.log(err);
     }
-
+    // write id for id and text
     callback(null, data.map(item=>({id: item.split('.')[0], text: item.split('.')[0]})));
+    // TODO rewrite with promises to handle text within each file instead of ID
   });
 };
 
-exports.readOne = (id, callback) => {
-  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, text)=>{
+exports.readOne = (id, callback) => { //! Text parsed from this method is buffered
+  fs.readFile(exports.dataDir + '/' + id + '.txt', (err, text)=>{ //grabs ID and text from the file
     if (!text) {
       callback(new Error(`No item with id: ${id}`));
     } else {
+      // server response data
       callback(null, { id, text: text.toString() });
     }
   });
 };
 
-exports.update = (id, text, callback) => {
+exports.update = (id, text, callback) => { //Re-writes text in file if ID already exists
   fs.readFile(exports.dataDir + '/' + id + '.txt', (error)=>{
     if (error) {
       callback(new Error(`No item with id: ${error}`));
@@ -60,7 +62,7 @@ exports.update = (id, text, callback) => {
 
 };
 
-exports.delete = (id, callback) => {
+exports.delete = (id, callback) => { //Deletes file
   fs.rm(exports.dataDir + `/${id}.txt`, (err) => {
     if (err) {
       // report an error if item not found

@@ -37,10 +37,13 @@ const writeCounter = (count, callback) => {
 // Public API - Fix this function //////////////////////////////////////////////
 
 exports.getNextUniqueId = (cb) => {
+  // read counter.txt and see if there is a most recent ID
   readCounter((err, data) => {
+    //Error first callbacks for all async operations
     if (err) {
       console.log(err);
     }
+    // increment current ID by one and write it to the counter.txt
     writeCounter(data + 1, cb);
   });
 };
